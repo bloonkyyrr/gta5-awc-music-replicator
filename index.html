@@ -1,0 +1,514 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GTA 5 AWC Replicator</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;700&display=swap');
+
+        :root {
+            --rs-yellow: #fcaf17;
+            --rs-black: #000000;
+            --rs-gray-bg: rgba(255, 255, 255, 0.08);
+            --rs-gray-hover: rgba(255, 255, 255, 0.15);
+            --rs-white: #ffffff;
+        }
+
+        body {
+            font-family: 'Oswald', sans-serif;
+            background-color: var(--rs-black);
+            color: var(--rs-white);
+            margin: 0;
+            padding: 50px;
+            text-transform: uppercase; 
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+            letter-spacing: 1px;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            box-sizing: border-box;
+            position: relative;
+        }
+
+        #visualizerCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            background-color: var(--rs-black);
+            display: none;
+        }
+        
+        .header {
+            border-bottom: 4px solid var(--rs-yellow);
+            padding-bottom: 10px;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+
+        h1 { 
+            color: var(--rs-white); 
+            margin: 0 0 5px 0;
+            font-size: 42px;
+            font-weight: 700;
+        }
+
+        p {
+            margin: 0;
+            color: #aaa;
+            font-size: 16px;
+            font-weight: 400;
+        }
+
+        .help-btn {
+            position: absolute;
+            top: 40px;
+            right: 50px;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            padding: 0;
+            border-color: #555;
+            color: #ccc;
+            z-index: 10;
+        }
+
+        .help-btn:hover {
+            border-color: var(--rs-yellow);
+            color: var(--rs-black);
+            background-color: var(--rs-yellow);
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: none; 
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(4px); 
+        }
+
+        .modal-content {
+            background: var(--rs-black);
+            border-top: 5px solid var(--rs-yellow);
+            padding: 30px;
+            max-width: 600px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.9);
+            border-bottom: 2px solid #333;
+        }
+
+        .modal-content h2 {
+            color: var(--rs-yellow);
+            margin-top: 0;
+            font-size: 28px;
+        }
+
+        .modal-content p {
+            color: var(--rs-white);
+            font-size: 16px;
+            line-height: 1.6;
+            text-transform: none; 
+            letter-spacing: normal;
+        }
+
+        .modal-content a {
+            color: var(--rs-yellow);
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .modal-content a:hover {
+            text-decoration: underline;
+        }
+
+        .close-btn {
+            margin-top: 25px;
+            width: 100%;
+            border-color: var(--rs-white);
+        }
+
+        .controls { 
+            display: flex;
+            gap: 15px;
+            margin-bottom: 40px;
+            background: rgba(0, 0, 0, 0.85);
+            padding: 20px;
+            border-left: 5px solid var(--rs-white);
+            align-items: center;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(2px);
+        }
+
+        button, input[type="file"]::file-selector-button {
+            background-color: transparent;
+            color: var(--rs-white);
+            border: 2px solid var(--rs-white);
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: 'Oswald', sans-serif;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.1s ease;
+            letter-spacing: 1px;
+        }
+
+        button:hover, input[type="file"]::file-selector-button:hover { 
+            background-color: var(--rs-white); 
+            color: var(--rs-black);
+        }
+
+        button:active { transform: scale(0.98); }
+        
+        button:disabled { 
+            border-color: #444; 
+            color: #444; 
+            cursor: not-allowed; 
+        }
+        button:disabled:hover { background-color: transparent; color: #444; }
+
+        #playBtn { border-color: var(--rs-yellow); color: var(--rs-yellow); }
+        #playBtn:hover:not(:disabled) { background-color: var(--rs-yellow); color: var(--rs-black); }
+
+        #visualizerBtn { border-color: #58a6ff; color: #58a6ff; }
+        #visualizerBtn:hover { background-color: #58a6ff; color: var(--rs-black); }
+        #visualizerBtn.active { background-color: #58a6ff; color: var(--rs-black); }
+
+        #mixerBoard {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-width: 800px;
+            flex: 1; 
+            position: relative;
+            z-index: 2;
+        }
+
+        .track-container {
+            background-color: rgba(22, 27, 34, 0.9);
+            padding: 15px 20px;
+            border-left: 5px solid var(--rs-yellow);
+            transition: background-color 0.1s ease;
+            backdrop-filter: blur(2px);
+        }
+        
+        .track-container:hover { 
+            background-color: rgba(30, 36, 45, 0.95); 
+        }
+
+        .track-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            font-weight: 500;
+        }
+
+        .vol-label {
+            font-size: 16px;
+            color: var(--rs-white);
+            font-weight: 600;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            background: transparent;
+            cursor: pointer;
+        }
+        input[type="range"]:focus { outline: none; }
+        
+        input[type="range"]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 6px;
+            background: #333; 
+        }
+        
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 20px;
+            width: 12px; 
+            background: var(--rs-white);
+            margin-top: -7px;
+            transition: background 0.1s ease;
+        }
+        
+        input[type="range"]::-webkit-slider-thumb:active {
+            background: var(--rs-yellow);
+        }
+        
+        #loadingText {
+            color: var(--rs-yellow);
+            font-weight: 600;
+            display: none;
+            font-size: 16px;
+        }
+
+        /* Clean, boxless legal footer */
+        .legal-footer {
+            margin-top: 50px;
+            padding-top: 20px;
+            border-top: 1px solid #222;
+            text-align: center;
+            font-size: 11px;
+            color: #666;
+            text-transform: none;
+            letter-spacing: normal;
+            font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            line-height: 1.5;
+            position: relative;
+            z-index: 2;
+            background: transparent; 
+        }
+    </style>
+</head>
+<body>
+
+    <canvas id="visualizerCanvas"></canvas>
+
+    <button id="helpBtn" class="help-btn">?</button>
+
+    <div id="helpModal" class="modal-overlay">
+        <div class="modal-content">
+            <h2>HOW TO GET AUDIO FILES</h2>
+            <p>
+                To get the audio files, make sure you own GTA 5, and have it installed on your PC, then Download OpenIV, then install it. If the OpenIV doesn't work on Enhanced version be sure to use the <a href="https://www.gta5-mods.com/tools/zenhanced-openiv-support-for-gta-v-enhanced" target="_blank">ZEnhanced Fix</a>.
+                <br><br>
+                If you see the game files in openIV, go to <strong>x64 > Audio</strong> (or if you want the DLC ones go to <strong>Update > x64</strong> and select the DLC), and select the audio track, recommended the "<strong>interactive_Music.rpf</strong>", then select any audio file, then press the Arrow button around "export all" and select "<strong>export all multichannel as Stereo WAV</strong>" and save it somewhere you'd remember. 
+                <br><br>
+                Have fun.
+            </p>
+            <button id="closeHelpBtn" class="close-btn">CLOSE</button>
+        </div>
+    </div>
+
+    <div class="header">
+        <h1>GTA 5 AWC Replicator</h1>
+        <p>Audio Engine / Stem Mixer Tool</p>
+    </div>
+
+    <div class="controls">
+        <input type="file" id="audioFiles" multiple accept="audio/wav, audio/ogg, audio/mp3">
+        <button id="playBtn" disabled>Play Sync</button>
+        <button id="stopBtn" disabled>Stop</button>
+        <button id="visualizerBtn">Visualizer: OFF</button>
+        <span id="loadingText">Decoding Audio Data...</span>
+    </div>
+
+    <div id="mixerBoard"></div>
+
+    <div class="legal-footer">
+        Not affiliated with Rockstar Games or Take-Two Interactive. <br>
+        All game audio, assets, characters, and trademarks are the property of their respective owners. <br>
+        This is an unofficial, open-source fan tool created for educational and modding purposes under fair use.
+    </div>
+
+    <script>
+        const helpModal = document.getElementById('helpModal');
+        
+        document.getElementById('helpBtn').addEventListener('click', () => {
+            helpModal.style.display = 'flex';
+        });
+
+        document.getElementById('closeHelpBtn').addEventListener('click', () => {
+            helpModal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === helpModal) {
+                helpModal.style.display = 'none';
+            }
+        });
+
+        let audioContext = null;
+        let analyserNode = null;
+        let stemsData = [];
+        let isPlaying = false;
+        let visualizerActive = false;
+        let animationId = null;
+
+        const canvas = document.getElementById('visualizerCanvas');
+        const canvasCtx = canvas.getContext('2d');
+        const visualizerBtn = document.getElementById('visualizerBtn');
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        visualizerBtn.addEventListener('click', () => {
+            visualizerActive = !visualizerActive;
+            if (visualizerActive) {
+                canvas.style.display = 'block';
+                visualizerBtn.innerText = "Visualizer: ON";
+                visualizerBtn.classList.add('active');
+                if (isPlaying) drawVisualizer();
+            } else {
+                canvas.style.display = 'none';
+                visualizerBtn.innerText = "Visualizer: OFF";
+                visualizerBtn.classList.remove('active');
+                if (animationId) cancelAnimationFrame(animationId);
+            }
+        });
+
+        document.getElementById('audioFiles').addEventListener('change', async function(event) {
+            const files = event.target.files;
+            if (files.length === 0) return;
+
+            if (!audioContext) {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyserNode = audioContext.createAnalyser();
+                analyserNode.fftSize = 128;
+            }
+
+            const mixerBoard = document.getElementById('mixerBoard');
+            const playBtn = document.getElementById('playBtn');
+            const stopBtn = document.getElementById('stopBtn');
+            const loadingText = document.getElementById('loadingText');
+
+            stopAudio();
+            mixerBoard.innerHTML = ''; 
+            stemsData = [];
+            playBtn.disabled = true;
+            stopBtn.disabled = true;
+            loadingText.style.display = 'inline';
+
+            const decodePromises = Array.from(files).map(async (file, index) => {
+                const arrayBuffer = await file.arrayBuffer();
+                const audioBuffer = await audioContext.decodeAudioData(arrayBuffer);
+                
+                return {
+                    name: file.name,
+                    buffer: audioBuffer,
+                    volume: 0,
+                    sourceNode: null,
+                    gainNode: null
+                };
+            });
+
+            stemsData = await Promise.all(decodePromises);
+            
+            stemsData.forEach((track, index) => {
+                let trackDiv = document.createElement('div');
+                trackDiv.className = 'track-container';
+                
+                let displayName = track.name.length > 35 ? track.name.substring(0, 35) + '...' : track.name;
+                
+                trackDiv.innerHTML = `
+                    <div class="track-header">
+                        <span title="${track.name}">${displayName}</span>
+                        <span class="vol-label" id="vol-label-${index}">0%</span>
+                    </div>
+                    <input type="range" min="0" max="1" step="0.01" value="0" 
+                           oninput="updateVolume(${index}, this.value)">
+                `;
+                mixerBoard.appendChild(trackDiv);
+            });
+
+            loadingText.style.display = 'none';
+            playBtn.disabled = false;
+            stopBtn.disabled = false;
+        });
+
+        window.updateVolume = function(index, value) {
+            if(stemsData[index]) {
+                stemsData[index].volume = parseFloat(value);
+                
+                if (stemsData[index].gainNode) {
+                    stemsData[index].gainNode.gain.setTargetAtTime(stemsData[index].volume, audioContext.currentTime, 0.05);
+                }
+                
+                document.getElementById(`vol-label-${index}`).innerText = Math.round(value * 100) + '%';
+            }
+        };
+
+        function playAudio() {
+            if (isPlaying || stemsData.length === 0) return;
+            if (audioContext.state === 'suspended') audioContext.resume();
+
+            stemsData.forEach(track => {
+                const source = audioContext.createBufferSource();
+                source.buffer = track.buffer;
+                source.loop = true; 
+
+                const gainNode = audioContext.createGain();
+                gainNode.gain.value = track.volume;
+
+                source.connect(gainNode);
+                gainNode.connect(analyserNode);
+                analyserNode.connect(audioContext.destination);
+
+                source.start(0);
+
+                track.sourceNode = source;
+                track.gainNode = gainNode;
+            });
+            isPlaying = true;
+
+            if (visualizerActive) {
+                drawVisualizer();
+            }
+        }
+
+        function stopAudio() {
+            if (!isPlaying) return;
+            stemsData.forEach(track => {
+                if (track.sourceNode) {
+                    track.sourceNode.stop();
+                    track.sourceNode.disconnect();
+                    track.gainNode.disconnect();
+                }
+            });
+            isPlaying = false;
+            if (animationId) cancelAnimationFrame(animationId);
+            canvasCtx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        function drawVisualizer() {
+            if (!isPlaying || !visualizerActive) return;
+
+            animationId = requestAnimationFrame(drawVisualizer);
+
+            const bufferLength = analyserNode.frequencyBinCount;
+            const dataArray = new Uint8Array(bufferLength);
+            analyserNode.getByteFrequencyData(dataArray);
+
+            canvasCtx.fillStyle = '#000000';
+            canvasCtx.fillRect(0, 0, canvas.width, canvas.height);
+
+            let barWidth = (canvas.width / bufferLength) * 2.5;
+            let barHeight;
+            let x = 0;
+
+            for (let i = 0; i < bufferLength; i++) {
+                barHeight = (dataArray[i] / 255) * canvas.height * 0.8;
+
+                canvasCtx.fillStyle = '#fcaf17';
+                canvasCtx.fillRect(x, canvas.height - barHeight, barWidth - 4, barHeight);
+
+                x += barWidth;
+            }
+        }
+
+        document.getElementById('playBtn').addEventListener('click', playAudio);
+        document.getElementById('stopBtn').addEventListener('click', stopAudio);
+    </script>
+</body>
+</html>
