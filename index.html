@@ -15,6 +15,11 @@
             --rs-white: #ffffff;
         }
 
+        /* Custom GTA Pointer Cursor applied globally */
+        body, button, input[type="file"]::file-selector-button, input[type="range"], label, a {
+            cursor: url('cursor.cur'), pointer;
+        }
+
         body {
             font-family: 'Oswald', sans-serif;
             background-color: var(--rs-black);
@@ -162,7 +167,7 @@
             font-weight: 600;
             font-family: 'Oswald', sans-serif;
             text-transform: uppercase;
-            cursor: pointer;
+            cursor: url('cursor.cur'), pointer;
             transition: all 0.1s ease;
             letter-spacing: 1px;
         }
@@ -229,7 +234,7 @@
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
-            cursor: pointer;
+            cursor: url('cursor.cur'), pointer;
         }
         input[type="range"]:focus { outline: none; }
         
@@ -246,6 +251,7 @@
             background: var(--rs-white);
             margin-top: -7px;
             transition: background 0.1s ease;
+            cursor: url('cursor.cur'), pointer;
         }
         
         input[type="range"]::-webkit-slider-thumb:active {
@@ -259,7 +265,6 @@
             font-size: 16px;
         }
 
-        /* Clean, boxless legal footer */
         .legal-footer {
             margin-top: 50px;
             padding-top: 20px;
