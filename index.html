@@ -15,12 +15,9 @@
             --rs-white: #ffffff;
         }
 
-        /* Custom GTA Pointer Cursor applied globally */
-        body, button, input[type="file"]::file-selector-button, input[type="range"], label, a {
-            cursor: url('cursor.cur'), pointer;
-        }
-
+        /* Default cursor for the rest of the page */
         body {
+            cursor: auto;
             font-family: 'Oswald', sans-serif;
             background-color: var(--rs-black);
             color: var(--rs-white);
@@ -37,6 +34,16 @@
             min-height: 100vh;
             box-sizing: border-box;
             position: relative;
+        }
+
+        /* Custom GTA Pointer Cursor ONLY on hover over interactive elements */
+        button:hover, 
+        input[type="file"]::file-selector-button:hover, 
+        input[type="range"]:hover, 
+        label:hover, 
+        a:hover,
+        .help-btn:hover {
+            cursor: url('cursor.cur'), pointer;
         }
 
         #visualizerCanvas {
@@ -167,7 +174,6 @@
             font-weight: 600;
             font-family: 'Oswald', sans-serif;
             text-transform: uppercase;
-            cursor: url('cursor.cur'), pointer;
             transition: all 0.1s ease;
             letter-spacing: 1px;
         }
@@ -234,7 +240,6 @@
             -webkit-appearance: none;
             width: 100%;
             background: transparent;
-            cursor: url('cursor.cur'), pointer;
         }
         input[type="range"]:focus { outline: none; }
         
@@ -251,7 +256,6 @@
             background: var(--rs-white);
             margin-top: -7px;
             transition: background 0.1s ease;
-            cursor: url('cursor.cur'), pointer;
         }
         
         input[type="range"]::-webkit-slider-thumb:active {
